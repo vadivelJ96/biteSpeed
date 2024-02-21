@@ -33,8 +33,6 @@ export class ContactsService {
             .andWhere('contact.linkedId IS NULL')
             .getMany();
 
-            console.log(emailPrimaryCheck);
-            console.log(phoneNumberPrimaryCheck);
 
         if((emailPrimaryCheck.length>0) && (phoneNumberPrimaryCheck.length>0) 
         && (emailPrimaryCheck[0].id !== phoneNumberPrimaryCheck[0].id))
@@ -98,6 +96,7 @@ export class ContactsService {
         for(let i=0;i<primaryIdCheckResult.length;i++){
             emailArray.push(primaryIdCheckResult[i].email);
             phoneNumberArray.push(primaryIdCheckResult[i].phoneNumber);
+            if(i==0){continue}
             secondaryContactIddArray.push(primaryIdCheckResult[i].id)
         }
         emailArray.push(result.email);
@@ -110,7 +109,7 @@ export class ContactsService {
                 primaryContatctId:matchId?matchId:result.id,
                 emails:[matchPrecedence=='primary'?result.email:emailArray], 
                 phoneNumbers:[matchPrecedence=='primary'?result.phoneNumber:phoneNumberArray],
-                secondaryContactIds:[...secondaryContactIddArray] 
+                secondaryContactIds:[matchPrecedence=='secondary'?[result.id,...secondaryContactIddArray]:[]] 
             }
         }
         
@@ -121,6 +120,11 @@ export class ContactsService {
     async getContacts() {
         const getContact=await this.contactRepository.findBy({deletedAt:null});
         return getContact;
+    }
+
+    async clearAllContacts(){
+        const deleteContact=await this.contactRepository.delete({});
+        return deleteContact;
     }
 
 
